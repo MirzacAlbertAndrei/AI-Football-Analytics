@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import players
+from routes import players, coach, dashboard
 
 app = FastAPI(title="U Cluj Smart Coach API")
 
@@ -13,7 +13,8 @@ app.add_middleware(
 )
 
 app.include_router(players.router)
-
+app.include_router(coach.router)
+app.include_router(dashboard.router)
 
 @app.get("/")
 def root():

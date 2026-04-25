@@ -51,13 +51,6 @@ def analyze_player(player):
     else:
         defensive_stability = "Low"
 
-    recommendation = build_recommendation(
-        risk,
-        attacking_impact,
-        creativity,
-        defensive_stability
-    )
-
     return {
         "playerId": player.get("playerId"),
         "matchId": player.get("matchId"),
@@ -68,7 +61,12 @@ def analyze_player(player):
         "attacking_impact": attacking_impact,
         "creativity": creativity,
         "defensive_stability": defensive_stability,
-        "recommendation": recommendation,
+        "recommendation": build_recommendation(
+            risk,
+            attacking_impact,
+            creativity,
+            defensive_stability
+        ),
 
         "raw_stats": {
             "minutes": total.get("minutesOnField", 0),
