@@ -71,7 +71,7 @@ Keep it clear, direct, and useful for a coach.
     
 
     response = client.models.generate_content(
-        model="gemini-2.5-flash",
+        model="gemini-2.5-flash-lite",
         contents=prompt,
     )
 
