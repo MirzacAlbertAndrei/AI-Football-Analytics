@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom"; // Import the navigation hook
 import { apiGet } from "../api";
 
 // Helper to clean up match filenames for the dropdown
@@ -13,9 +14,7 @@ function formatMatchName(rawName) {
 function StatCard({ title, value, subtitle }) {
   return (
     <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 relative overflow-hidden group hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-default">
-      {/* Top accent line is now consistently black to match the other tabs */}
       <div className="absolute top-0 left-0 w-full h-1 bg-black group-hover:h-1.5 transition-all"></div>
-      
       <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider">{title}</p>
       <h2 className="text-4xl font-black mt-2 tracking-tight text-black">
         {value}
@@ -25,7 +24,8 @@ function StatCard({ title, value, subtitle }) {
   );
 }
 
-function PlayerList({ title, players, type }) {
+// Updated PlayerList to accept an onPlayerClick prop
+function PlayerList({ title, players, type, onPlayerClick }) {
   const accentColor = type === "risk" ? "bg-red-600" : type === "attack" ? "bg-black" : "bg-gray-400";
 
   return (
@@ -42,6 +42,7 @@ function PlayerList({ title, players, type }) {
           {players.map((player) => (
             <div
               key={player.playerId}
+              onClick={() => onPlayerClick(player.playerId)} // Trigger navigation on click
               className="bg-gray-50 p-4 rounded-lg border border-gray-100 group hover:bg-white hover:shadow-md hover:-translate-y-1 hover:border-gray-200 transition-all duration-300 cursor-pointer"
             >
               <div className="flex justify-between items-start gap-3">
@@ -82,6 +83,7 @@ function PlayerList({ title, players, type }) {
 }
 
 export default function Overview() {
+  const navigate = useNavigate(); // Initialize the navigate function
   const [overview, setOverview] = useState(null);
   const [matches, setMatches] = useState([]);
   const [selectedMatchId, setSelectedMatchId] = useState("all");
@@ -119,6 +121,11 @@ export default function Overview() {
     loadOverview(value);
   }
 
+  // Navigation handler
+  const handlePlayerClick = (playerId) => {
+    navigate(`/players/${playerId}`);
+  };
+
   if (loading && !overview) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-zinc-50">
@@ -139,7 +146,6 @@ export default function Overview() {
   const totalThreat = parseFloat(overview.top_attackers?.reduce((sum, p) => 
     sum + (p.raw_stats?.xg || p.totals?.xg || 0), 0).toFixed(2)) || 0;
 
-  // Simplified branding logic: Removed Developing tier
   const getPerformanceBranding = () => {
     if (performanceIndex >= 75) return { label: 'Peak Performance', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
     return { label: 'Standard Analysis', color: 'bg-zinc-50 text-zinc-700 border-zinc-200' };
@@ -182,7 +188,7 @@ export default function Overview() {
         </select>
       </div>
 
-      {/* STATS GRID - Now visually unified in black */}
+      {/* STATS GRID */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard title="Current Scope" value={overview.mode === "single_match" ? "Match" : "Season"} subtitle="Analysis Range" />
         <StatCard title="Active Profiles" value={overview.players_analyzed || 0} subtitle="Data points" />
@@ -198,7 +204,7 @@ export default function Overview() {
         />
       </div>
 
-      {/* AI TACTICAL SUMMARY - Only shows if data exists */}
+      {/* AI TACTICAL SUMMARY */}
       {(overview.main_problem || overview.main_recommendation) && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {overview.main_problem && (
@@ -218,11 +224,26 @@ export default function Overview() {
         </div>
       )}
 
-      {/* DRILL-DOWN LISTS */}
+      {/* DRILL-DOWN LISTS with Click Navigation */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4 items-stretch">
-        <PlayerList title="High Attention Profiles" players={overview.top_risky_players || []} type="risk" />
-        <PlayerList title="Key Offensive Drivers" players={overview.top_attackers || []} type="attack" />
-        <PlayerList title="Performance Anchors" players={overview.stable_players || []} type="stable" />
+        <PlayerList 
+            title="High Attention Profiles" 
+            players={overview.top_risky_players || []} 
+            type="risk" 
+            onPlayerClick={handlePlayerClick}
+        />
+        <PlayerList 
+            title="Key Offensive Drivers" 
+            players={overview.top_attackers || []} 
+            type="attack" 
+            onPlayerClick={handlePlayerClick}
+        />
+        <PlayerList 
+            title="Performance Anchors" 
+            players={overview.stable_players || []} 
+            type="stable" 
+            onPlayerClick={handlePlayerClick}
+        />
       </div>
     </div>
   );
