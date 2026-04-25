@@ -1,4 +1,9 @@
+from data.player_map import PLAYER_MAP
+
+
 def analyze_player(player):
+    player_id = player.get("playerId")
+
     total = player.get("total", {})
     percent = player.get("percent", {})
 
@@ -52,7 +57,8 @@ def analyze_player(player):
         defensive_stability = "Low"
 
     return {
-        "playerId": player.get("playerId"),
+        "playerId": player_id,
+        "playerName": PLAYER_MAP.get(player_id, f"Player #{player_id}"),
         "matchId": player.get("matchId"),
         "source_file": player.get("source_file"),
         "position": get_main_position(player),

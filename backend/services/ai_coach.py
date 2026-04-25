@@ -11,7 +11,6 @@ from services.trend_analyzer import (
 
 load_dotenv()
 
-# Client automatically reads GEMINI_API_KEY
 client = genai.Client()
 
 
@@ -30,7 +29,9 @@ def generate_coach_report():
 You are an elite football tactical analyst working with U Cluj's coaching staff.
 
 You must base your answer ONLY on the provided data.
-Do not invent player names. If names are missing, use playerId.
+Use playerName when it exists.
+If playerName is missing, use playerId.
+Do not invent player names.
 
 Important tactical principles:
 - Not all losses are equal.
@@ -43,7 +44,7 @@ Important tactical principles:
 - Stable players can be used to support buildup phases.
 
 Data:
-{json.dumps(data, indent=2)}
+{json.dumps(data, indent=2, ensure_ascii=False)}
 
 Create a professional coach report with this exact structure:
 
@@ -65,10 +66,9 @@ List exactly 3 actionable focuses.
 Final Match Plan
 Give a clear tactical plan for the next match.
 
-Keep it clear, direct, and useful for a coach. Keep it concise(maximum 1-2 sentences) and only in English.
+Keep it clear, direct, and useful for a coach.
+Answer only in English.
 """
-    
-    
 
     response = client.models.generate_content(
         model="gemini-2.5-flash-lite",
@@ -78,6 +78,7 @@ Keep it clear, direct, and useful for a coach. Keep it concise(maximum 1-2 sente
     return {
         "coach_report": response.text
     }
+
 
 def answer_coach_question(question):
     risky_players = get_top_risky_players(limit=5)
@@ -94,15 +95,18 @@ def answer_coach_question(question):
 You are an elite football tactical analyst for U Cluj.
 
 Use ONLY this data:
-{json.dumps(data, indent=2)}
+{json.dumps(data, indent=2, ensure_ascii=False)}
+
+Use playerName when it exists.
+If playerName is missing, use playerId.
+Do not invent player names.
 
 Coach question:
 {question}
 
 Answer clearly and tactically.
-Use playerId if names are missing.
-Do not include special symbols or formatting just plain language.
-Answer in English and in maximum 2-3 paragraphs made of 1-2(maximum 3) sentences each.
+Do not include special symbols or formatting, just plain language.
+Answer in English and in maximum 2-3 paragraphs.
 """
 
     response = client.models.generate_content(

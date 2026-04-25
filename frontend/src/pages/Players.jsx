@@ -22,7 +22,7 @@ function PlayerCard({ player, mode, onClick }) {
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-2xl font-black text-black tracking-tight uppercase">
-              Player #{player.playerId}
+              {player.playerName || `Player #${player.playerId}`}
             </h3>
             <svg 
               className="w-5 h-5 text-gray-300 group-hover:text-red-600 group-hover:translate-x-1.5 transition-all duration-300" 

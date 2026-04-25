@@ -37,7 +37,7 @@ function PlayerList({ title, players, type }) {
                 <div>
                   <div className="flex items-center gap-2">
                     <p className="font-bold text-black text-lg">
-                      Player #{player.playerId}
+                      {player.playerName || `Player #${player.playerId}`}
                     </p>
                     {/* Animated hover icon */}
                     <svg 

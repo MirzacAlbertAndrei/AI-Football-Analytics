@@ -91,7 +91,10 @@ export default function PlayerDetail() {
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 border-b border-gray-200 pb-6">
         <div>
           <h1 className="text-4xl md:text-5xl font-black text-black tracking-tight uppercase">
-            Player <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-800">#{player.playerId}</span>
+            Player{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-800">
+              {player.playerName || `Player #${player.playerId}`}
+            </span>
           </h1>
           <p className="text-red-600 font-bold mt-2 tracking-widest uppercase text-sm">
             {player.position || "Unknown position"}
