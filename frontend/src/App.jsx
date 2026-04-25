@@ -1,5 +1,8 @@
 import React from "react";
-import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+// Ensure this path matches where you saved the Sidebar component
+import Sidebar from "./components/Sidebar"; 
 
 import Overview from "./pages/Overview";
 import Players from "./pages/Players";
@@ -8,40 +11,21 @@ import CoachChat from "./pages/CoachChat";
 import CoachReport from "./pages/CoachReport";
 
 function Layout() {
-  const linkClass = ({ isActive }) =>
-    `px-4 py-2 rounded-xl font-semibold ${
-      isActive
-        ? "bg-blue-600 text-white"
-        : "text-gray-700 hover:bg-gray-100"
-    }`;
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-200 px-6 py-4 flex gap-3">
-        <NavLink to="/" className={linkClass}>
-          Overview
-        </NavLink>
+    <div className="flex h-screen bg-zinc-50 overflow-hidden font-sans text-black">
+      {/* Vertical Navigation */}
+      <Sidebar />
 
-        <NavLink to="/players" className={linkClass}>
-          Players
-        </NavLink>
-
-        <NavLink to="/coach-report" className={linkClass}>
-          Coach Report
-        </NavLink>
-
-        <NavLink to="/coach-chat" className={linkClass}>
-          AI Chat
-        </NavLink>
-      </nav>
-
-      <Routes>
-        <Route path="/" element={<Overview />} />
-        <Route path="/players" element={<Players />} />
-        <Route path="/players/:id" element={<PlayerDetail />} />
-        <Route path="/coach-report" element={<CoachReport />} />
-        <Route path="/coach-chat" element={<CoachChat />} />
-      </Routes>
+      {/* Main Content Area */}
+      <main className="flex-1 overflow-y-auto relative">
+        <Routes>
+          <Route path="/" element={<Overview />} />
+          <Route path="/players" element={<Players />} />
+          <Route path="/players/:id" element={<PlayerDetail />} />
+          <Route path="/tactics" element={<CoachReport />} />
+          <Route path="/chat" element={<CoachChat />} />
+        </Routes>
+      </main>
     </div>
   );
 }

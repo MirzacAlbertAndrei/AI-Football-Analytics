@@ -101,6 +101,7 @@ Coach question:
 
 Answer clearly and tactically.
 Use playerId if names are missing.
+Do not include special symbols or formatting just plain language.
 Answer in English and in maximum 2-3 paragraphs made of 1-2(maximum 3) sentences each.
 """
 

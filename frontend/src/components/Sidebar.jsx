@@ -4,42 +4,79 @@ export default function Sidebar() {
   const menuItems = [
     { name: 'Overview', path: '/' },
     { name: 'Squad Roster', path: '/players' },
-    { name: 'Tactical Insights', path: '/tactics' },
-    { name: 'Coach Chat', path: '/chat' },
+    { name: 'AI Powered Report', path: '/tactics' },
+    { name: 'AI Coach Chat', path: '/chat' },
   ];
 
   return (
-    <div className="w-64 bg-slate-900 h-screen text-white flex flex-col border-r border-slate-800">
-      <div className="h-16 flex items-center px-6 border-b border-slate-800">
-        <h1 className="text-xl font-bold tracking-wider text-emerald-400">Gaffer AI</h1>
+    <div className="w-64 bg-black h-screen text-white flex flex-col border-r border-gray-900 shrink-0 font-sans shadow-2xl">
+      {/* Header / Brand Area */}
+      <div className="h-24 flex items-center px-8 border-b border-gray-900 relative overflow-hidden">
+        {/* Signature Red Accent */}
+        <div className="absolute left-0 top-0 w-1.5 h-full bg-red-600"></div>
+        <h1 className="text-3xl font-black text-white tracking-widest uppercase">
+          AI <span className="text-red-600">Coach Assist</span>
+        </h1>
       </div>
       
-      <nav className="flex-1 py-6 px-3 space-y-2">
+      {/* Navigation Links */}
+      <nav className="flex-1 py-8 px-4 space-y-3 overflow-y-auto">
         {menuItems.map((item) => (
           <NavLink
             key={item.name}
             to={item.path}
             className={({ isActive }) => 
-              `flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              `relative flex items-center px-4 py-3.5 rounded-xl text-sm font-bold uppercase tracking-wider transition-all duration-300 group overflow-hidden ${
                 isActive 
-                  ? 'bg-emerald-500 text-slate-900' 
-                  : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                  ? 'bg-white text-black shadow-md' 
+                  : 'text-gray-400 hover:bg-gray-900 hover:text-white'
               }`
             }
           >
-            {item.name}
+            {({ isActive }) => (
+              <>
+                {/* Active Indicator Line */}
+                {isActive && (
+                  <div className="absolute left-0 top-0 w-1.5 h-full bg-red-600"></div>
+                )}
+                
+                {/* Text with Hover Translation */}
+                <span className={`transform transition-transform duration-300 ${isActive ? 'translate-x-1' : 'group-hover:translate-x-2'}`}>
+                  {item.name}
+                </span>
+
+                {/* Animated Arrow on Hover (Only for inactive items) */}
+                {!isActive && (
+                  <svg 
+                    className="w-4 h-4 ml-auto opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-red-600" 
+                    fill="none" 
+                    strokeWidth="3" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                  </svg>
+                )}
+              </>
+            )}
           </NavLink>
         ))}
       </nav>
 
-      <div className="p-4 border-t border-slate-800">
-        <div className="flex items-center space-x-3">
-          <div className="h-8 w-8 rounded-full bg-slate-700 flex items-center justify-center">
-            👤
+      {/* Footer / User Profile */}
+      <div className="p-6 border-t border-gray-900 bg-black">
+        <div className="flex items-center gap-4 group cursor-pointer p-2 rounded-xl hover:bg-gray-900 transition-colors duration-300">
+          {/* Avatar Block */}
+          <div className="h-12 w-12 rounded-lg bg-gray-900 border border-gray-800 flex items-center justify-center text-red-600 font-black group-hover:border-red-600 transition-colors duration-300 relative overflow-hidden">
+            {/* Fill animation on hover */}
+            <div className="absolute bottom-0 left-0 w-full h-0 bg-red-600 group-hover:h-full transition-all duration-300 z-0"></div>
+            <span className="relative z-10 group-hover:text-white transition-colors duration-300">HC</span>
           </div>
+          
+          {/* Details */}
           <div>
-            <p className="text-sm font-medium">Head Coach</p>
-            <p className="text-xs text-slate-400">Matchday Mode</p>
+            <p className="text-sm font-bold uppercase tracking-wider text-white">Head Coach</p>
+            <p className="text-[10px] font-bold text-red-600 uppercase tracking-widest mt-0.5">U Cluj Staff</p>
           </div>
         </div>
       </div>
