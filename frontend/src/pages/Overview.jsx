@@ -1,127 +1,241 @@
-import { useState, useEffect } from 'react';
-import MetricCard from '../components/MetricCard';
-import CoachRecommendation from '../components/CoachRecommendation';
+import React, { useEffect, useState } from "react";
+import { apiGet } from "../api";
+
+function StatCard({ title, value, subtitle }) {
+  return (
+    <div className="bg-white rounded-2xl shadow p-5 border border-gray-100">
+      <p className="text-sm text-gray-500">{title}</p>
+      <h2 className="text-3xl font-bold text-gray-900 mt-2">{value}</h2>
+      {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
+    </div>
+  );
+}
+
+function PlayerList({ title, players, type }) {
+  return (
+    <div className="bg-white rounded-2xl shadow p-5 border border-gray-100">
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
+
+      {!players || players.length === 0 ? (
+        <p className="text-sm text-gray-500">No players found.</p>
+      ) : (
+        <div className="space-y-3">
+          {players.map((player) => (
+            <div
+              key={player.playerId}
+              className="border-b pb-3 last:border-b-0"
+            >
+              <div className="flex justify-between items-start gap-3">
+                <div>
+                  <p className="font-semibold text-gray-900">
+                    Player #{player.playerId}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {player.position || "Unknown position"}
+                  </p>
+                </div>
+
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    type === "risk"
+                      ? "bg-red-100 text-red-700"
+                      : type === "attack"
+                      ? "bg-blue-100 text-blue-700"
+                      : "bg-green-100 text-green-700"
+                  }`}
+                >
+                  {type === "risk"
+                    ? "Risk"
+                    : type === "attack"
+                    ? "Attack"
+                    : "Stable"}
+                </span>
+              </div>
+
+              {player.trend_label && (
+                <p className="text-sm text-gray-700 mt-2">
+                  {player.trend_label}
+                </p>
+              )}
+
+              {player.recommendation && (
+                <p className="text-xs text-gray-500 mt-1">
+                  {player.recommendation}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Overview() {
-  // --- STATE MANAGEMENT ---
-  const [overviewData, setOverviewData] = useState(null);
+  const [overview, setOverview] = useState(null);
+  const [matches, setMatches] = useState([]);
+  const [selectedMatchId, setSelectedMatchId] = useState("all");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
 
-  // --- API FETCH LAYER ---
+  async function loadOverview(matchId = "all") {
+    try {
+      setLoading(true);
+      setError("");
+
+      const path =
+        matchId === "all"
+          ? "/dashboard/overview"
+          : `/dashboard/overview?match_id=${matchId}`;
+
+      const data = await apiGet(path);
+      setOverview(data);
+    } catch (err) {
+      console.error(err);
+      setError("Could not load overview from backend.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
-    const fetchOverviewData = async () => {
+    async function loadInitialData() {
       try {
-        setLoading(true);
-        
-        // Replace with your actual backend endpoint for the match overview
-        const response = await fetch('https://your-api-url.com/team-overview/60374/next-match');
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch overview data from the server.');
-        }
-
-        const data = await response.json();
-        setOverviewData(data);
+        const matchesData = await apiGet("/players/matches");
+        setMatches(matchesData.matches || []);
       } catch (err) {
-        console.error("API Error:", err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
+        console.error("Could not load matches", err);
       }
-    };
 
-    fetchOverviewData();
+      await loadOverview("all");
+    }
+
+    loadInitialData();
   }, []);
 
-  // --- UI STATES ---
-  if (loading) {
+  function handleMatchChange(e) {
+    const value = e.target.value;
+    setSelectedMatchId(value);
+    loadOverview(value);
+  }
+
+  if (loading && !overview) {
     return (
-      <div className="max-w-6xl mx-auto py-20 text-center animate-pulse">
-        <div className="h-12 w-12 bg-emerald-500 rounded-full mb-4 mx-auto"></div>
-        <h2 className="text-xl font-bold text-slate-400">Analyzing Pre-Match Data...</h2>
+      <div className="p-6">
+        <p className="text-gray-600">Loading tactical overview...</p>
       </div>
     );
   }
 
-  if (error) {
+  if (error && !overview) {
     return (
-      <div className="max-w-6xl mx-auto py-20 text-center text-red-500 bg-red-50 rounded-2xl border border-red-200">
-        <h2 className="text-2xl font-bold">Analysis Unavailable</h2>
-        <p>{error}</p>
+      <div className="p-6">
+        <div className="bg-red-100 text-red-700 p-4 rounded-xl">
+          {error}
+        </div>
       </div>
     );
   }
 
-  // Fallback in case data is empty
-  if (!overviewData) return null;
+  if (!overview) return null;
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in">
-      {/* Dynamic Header */}
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">Pre-Match Analysis</h2>
-        <p className="text-gray-500 mt-1">
-          Next Opponent: <span className="font-bold text-gray-700">{overviewData.matchInfo?.opponent}</span> • {overviewData.matchInfo?.venue} • {overviewData.matchInfo?.day}
-        </p>
-      </div>
-
-      {/* Dynamic Top Metrics Row */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <MetricCard 
-          title="Win Probability" 
-          value={overviewData.metrics?.winProbability} 
-          trend={overviewData.metrics?.winProbabilityTrend > 0 ? "up" : "down"} 
-          trendLabel={`${Math.abs(overviewData.metrics?.winProbabilityTrend)}%`} 
-        />
-        <MetricCard 
-          title="Squad Fatigue" 
-          value={overviewData.metrics?.squadFatigue} 
-          // If fatigue is worsening (going up), we might want a "down" or negative indicator
-          trend={overviewData.metrics?.fatigueWorsening ? "down" : "up"} 
-          trendLabel={overviewData.metrics?.previousFatigue} 
-        />
-        <MetricCard 
-          title="Expected Goals" 
-          value={overviewData.metrics?.expectedGoals} 
-          trend="up" 
-          trendLabel={overviewData.metrics?.xGTrend} 
-        />
-        <MetricCard 
-          title="Opponent Form" 
-          value={overviewData.metrics?.opponentForm} 
-        />
-      </div>
-
-      {/* Main Content Area */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* Left Column (Chart Placeholder) */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 p-6 flex items-center justify-center min-h-[300px] shadow-sm">
-          <p className="text-gray-400 font-medium">Data Visualization / Chart Component will load here</p>
+    <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Tactical Overview
+          </h1>
+          <p className="text-gray-500 mt-1">
+            AI overview based on U Cluj match data.
+          </p>
         </div>
 
-        {/* Right Column (Dynamic AI Insights) */}
-        <div className="space-y-4">
-          <h3 className="font-bold text-gray-900 flex items-center gap-2">
-            <span>🪄</span> Tactical Assistant
-          </h3>
-          
-          {/* Map through the AI recommendations array from the API */}
-          {overviewData.insights?.map((insight, index) => (
-            <CoachRecommendation 
-              key={index}
-              title={insight.title} 
-              insight={insight.description} 
-              action={insight.actionText}
-            />
+        <select
+          value={selectedMatchId}
+          onChange={handleMatchChange}
+          className="bg-white border border-gray-300 rounded-xl px-4 py-2 shadow-sm"
+        >
+          <option value="all">All matches overview</option>
+          {matches.map((match) => (
+            <option key={match.match_id} value={match.match_id}>
+              {match.file_name}
+            </option>
           ))}
+        </select>
+      </div>
 
-          {(!overviewData.insights || overviewData.insights.length === 0) && (
-            <p className="text-sm text-gray-500 italic">No specific tactical insights generated for this match.</p>
-          )}
+      {error && (
+        <div className="bg-red-100 text-red-700 p-4 rounded-xl">{error}</div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <StatCard
+          title="Analysis mode"
+          value={overview.mode === "single_match" ? "Match" : "Season"}
+          subtitle="Current scope"
+        />
+
+        <StatCard
+          title="Players analyzed"
+          value={overview.players_analyzed || 0}
+          subtitle="Available player profiles"
+        />
+
+        <StatCard
+          title="Risky players"
+          value={overview.top_risky_players?.length || 0}
+          subtitle="Possession risk"
+        />
+
+        <StatCard
+          title="Top attackers"
+          value={overview.top_attackers?.length || 0}
+          subtitle="Offensive impact"
+        />
+      </div>
+
+      {overview.mode === "all_matches" && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white rounded-2xl shadow p-5 border border-gray-100">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">
+              Main Tactical Problem
+            </h3>
+            <p className="text-gray-700 leading-relaxed">
+              {overview.main_problem || "No main problem available."}
+            </p>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow p-5 border border-gray-100">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">
+              Coach Recommendation
+            </h3>
+            <p className="text-gray-700 leading-relaxed">
+              {overview.main_recommendation ||
+                "No recommendation available."}
+            </p>
+          </div>
         </div>
-        
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <PlayerList
+          title="Top Risky Players"
+          players={overview.top_risky_players || []}
+          type="risk"
+        />
+
+        <PlayerList
+          title="Top Attackers"
+          players={overview.top_attackers || []}
+          type="attack"
+        />
+
+        <PlayerList
+          title="Stable Players"
+          players={overview.stable_players || []}
+          type="stable"
+        />
       </div>
     </div>
   );

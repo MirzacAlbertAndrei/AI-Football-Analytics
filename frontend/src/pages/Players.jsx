@@ -1,215 +1,228 @@
-import { useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import PlayerCard from '../components/PlayerCard';
+import React, { useEffect, useState } from "react";
+import { apiGet } from "../api";
 
-// Temporary mock of available matches for your dropdown
-const AVAILABLE_MATCHES = [
-  { id: '5828095', label: 'Univ. Craiova vs CFR Cluj (2-0)' },
-  { id: '5828096', label: 'Univ. Craiova vs FCSB (1-1)' },
-  { id: '5828097', label: 'Rapid vs Univ. Craiova (0-1)' }
-];
+function getRiskClass(risk) {
+  if (risk === "High") return "bg-red-100 text-red-700";
+  if (risk === "Medium") return "bg-yellow-100 text-yellow-700";
+  return "bg-green-100 text-green-700";
+}
 
-export default function Players() {
-  const navigate = useNavigate();
-  
-  // --- UI STATES ---
-  const [activeTab, setActiveTab] = useState('All');
-  const [viewMode, setViewMode] = useState('match'); // 'match' or 'history'
-  const [selectedMatchId, setSelectedMatchId] = useState(AVAILABLE_MATCHES[0].id);
-
-  // --- DATA STATES ---
-  const [matchData, setMatchData] = useState({ players: [] });
-  const [playerInfo, setPlayerInfo] = useState({ players: [] });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  // --- API FETCH LAYER ---
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        // 1. Determine which endpoint to hit based on the toggle
-        const statsEndpoint = viewMode === 'history' 
-          ? `https://your-api-url.com/team-stats/60374/season-history` 
-          : `https://your-api-url.com/match-stats/${selectedMatchId}`;
-
-        // 2. Fetch both the stats and the roster info
-        const [statsResponse, infoResponse] = await Promise.all([
-          fetch(statsEndpoint),
-          fetch('https://your-api-url.com/team-roster/60374') // Roster stays the same
-        ]);
-
-        if (!statsResponse.ok || !infoResponse.ok) {
-          throw new Error('Failed to fetch data from API');
-        }
-
-        const statsJson = await statsResponse.json();
-        const infoJson = await infoResponse.json();
-
-        setMatchData(statsJson);
-        setPlayerInfo(infoJson);
-      } catch (err) {
-        console.error("API Error:", err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [viewMode, selectedMatchId]); // Re-run this whenever the mode or match changes!
-
-  // --- DATA TRANSFORMATION LAYER ---
-  const enrichedSquad = useMemo(() => {
-    const allBios = playerInfo.players || [];
-    const allStats = matchData.players || [];
-    
-    const targetTeamId = 60374;
-    const teamBios = allBios.filter(p => p.currentTeamId == targetTeamId);
-
-    const infoDict = teamBios.reduce((acc, p) => {
-      if (p.wyId) acc[p.wyId.toString()] = p;
-      return acc;
-    }, {});
-    
-    return allStats
-      .filter(stat => infoDict[stat.playerId.toString()])
-      .map(stat => {
-        const bio = infoDict[stat.playerId.toString()];
-        
-        // --- KEY STAT LOGIC ---
-        const getBestStat = () => {
-          // If we are looking at history, we might look at averages instead of totals
-          const metrics = viewMode === 'history' ? (stat.average || stat.total || {}) : (stat.total || {});
-          const percent = stat.percent || {};
-
-          if (metrics.xgShot > 0.5) return `${metrics.xgShot.toFixed(2)} xG (High Threat)`;
-          if (metrics.recoveries > 8) return `${metrics.recoveries} Ball Recoveries`;
-          if (metrics.accelerations > 5) return `${metrics.accelerations} Explosive Runs`;
-          if (percent.successfulPasses > 85) return `${percent.successfulPasses}% Elite Passing`;
-          if (metrics.shotsOnTarget > 1) return `${metrics.shotsOnTarget} Shots on Target`;
-          
-          return `${percent.successfulPasses || 0}% Pass Accuracy`;
-        };
-
-        return {
-          ...stat,
-          displayName: bio?.shortName || stat.name || `Player #${stat.playerId}`,
-          position: bio?.role?.name || "Other",
-          bestStat: getBestStat()
-        };
-      });
-  }, [matchData, playerInfo, viewMode]);
-
-  const positions = ['All', 'Goalkeeper', 'Defender', 'Midfielder', 'Forward'];
-  const filteredSquad = enrichedSquad.filter(p => activeTab === 'All' || p.position === activeTab);
+function PlayerCard({ player, mode }) {
+  const isMatchMode = mode === "match";
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in pb-20">
-      
-      {/* HEADER & CONTROLS */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-slate-200 pb-6">
+    <div className="bg-white rounded-2xl shadow p-5 border border-gray-100">
+      <div className="flex justify-between items-start gap-3">
         <div>
-          <h2 className="text-4xl font-black text-slate-900 tracking-tight uppercase italic">
-            Squad Dashboard
-          </h2>
-          <p className="text-slate-500 font-medium mt-2">Team ID: 60374</p>
+          <h3 className="font-bold text-lg text-gray-900">
+            Player #{player.playerId}
+          </h3>
+          <p className="text-sm text-gray-500">
+            {player.position || "Unknown position"}
+          </p>
         </div>
 
-        {/* --- THE TOGGLE & DROPDOWN UI --- */}
-        <div className="flex flex-col items-end gap-3 w-full md:w-auto">
-          
-          {/* History vs Match Toggle */}
-          <div className="flex bg-slate-100 p-1 rounded-xl w-full sm:w-auto">
-            <button
-              onClick={() => setViewMode('history')}
-              className={`flex-1 px-6 py-2 rounded-lg text-sm font-bold transition-all ${
-                viewMode === 'history' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:text-slate-700'
-              }`}
-            >
-              Full Season History
-            </button>
-            <button
-              onClick={() => setViewMode('match')}
-              className={`flex-1 px-6 py-2 rounded-lg text-sm font-bold transition-all ${
-                viewMode === 'match' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:text-slate-700'
-              }`}
-            >
-              Specific Match
-            </button>
-          </div>
-
-          {/* Match Selector Dropdown (Only shows if 'match' is selected) */}
-          {viewMode === 'match' && (
-            <select 
-              value={selectedMatchId}
-              onChange={(e) => setSelectedMatchId(e.target.value)}
-              className="w-full sm:w-auto bg-white border border-slate-300 text-slate-700 text-sm font-bold rounded-lg px-4 py-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none shadow-sm cursor-pointer"
-            >
-              {AVAILABLE_MATCHES.map(match => (
-                <option key={match.id} value={match.id}>
-                  {match.label}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
+        {isMatchMode ? (
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-semibold ${getRiskClass(
+              player.risk
+            )}`}
+          >
+            {player.risk} risk
+          </span>
+        ) : (
+          <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+            {player.matches_played} matches
+          </span>
+        )}
       </div>
 
-      {/* ERROR & LOADING STATES */}
-      {loading && (
-        <div className="py-20 text-center animate-pulse">
-          <div className="h-12 w-12 bg-emerald-500 rounded-full mb-4 mx-auto"></div>
-          <p className="font-bold text-slate-400">Syncing with wyscout database...</p>
+      {isMatchMode ? (
+        <div className="grid grid-cols-2 gap-3 mt-4 text-sm">
+          <p>Minutes: {player.raw_stats?.minutes ?? 0}</p>
+          <p>Losses: {player.raw_stats?.losses ?? 0}</p>
+          <p>Own-half losses: {player.raw_stats?.own_half_losses ?? 0}</p>
+          <p>Dangerous losses: {player.raw_stats?.dangerous_losses ?? 0}</p>
+          <p>xG: {player.raw_stats?.xg ?? 0}</p>
+          <p>Key passes: {player.raw_stats?.key_passes ?? 0}</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-3 mt-4 text-sm">
+          <p>Avg losses: {player.averages?.losses ?? 0}</p>
+          <p>Avg dangerous: {player.averages?.dangerous_losses ?? 0}</p>
+          <p>Total goals: {player.totals?.goals ?? 0}</p>
+          <p>Total xG: {player.totals?.xg ?? 0}</p>
+          <p>High-risk matches: {player.high_risk_matches ?? 0}</p>
+          <p>High-impact matches: {player.high_impact_matches ?? 0}</p>
         </div>
       )}
 
-      {error && !loading && (
-        <div className="py-10 text-center text-red-500 bg-red-50 rounded-2xl border border-red-200">
-          <h2 className="text-xl font-bold">API Connection Failed</h2>
-          <p>{error}</p>
-          <p className="text-sm mt-2">Make sure your backend server is running.</p>
+      <div className="mt-4">
+        <p className="text-sm font-semibold text-gray-800">
+          {isMatchMode ? player.recommendation : player.trend_label}
+        </p>
+
+        {!isMatchMode && (
+          <p className="text-sm text-gray-500 mt-1">
+            {player.recommendation}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default function Players() {
+  const [mode, setMode] = useState("season");
+  const [matches, setMatches] = useState([]);
+  const [selectedMatchId, setSelectedMatchId] = useState("");
+  const [players, setPlayers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  async function loadSeasonTrends() {
+    try {
+      setLoading(true);
+      setError("");
+
+      const data = await apiGet("/players/trends");
+      setPlayers(data.trends || []);
+    } catch (err) {
+      console.error(err);
+      setError("Could not load player trends.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function loadMatchAnalysis(matchId) {
+    if (!matchId) return;
+
+    try {
+      setLoading(true);
+      setError("");
+
+      const data = await apiGet(`/players/analysis/match/${matchId}`);
+      setPlayers(data.analysis || []);
+    } catch (err) {
+      console.error(err);
+      setError("Could not load match player analysis.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    async function loadInitialData() {
+      try {
+        const matchesData = await apiGet("/players/matches");
+        const loadedMatches = matchesData.matches || [];
+
+        setMatches(loadedMatches);
+
+        if (loadedMatches.length > 0) {
+          setSelectedMatchId(loadedMatches[0].match_id);
+        }
+      } catch (err) {
+        console.error("Could not load matches", err);
+      }
+
+      await loadSeasonTrends();
+    }
+
+    loadInitialData();
+  }, []);
+
+  function handleModeChange(newMode) {
+    setMode(newMode);
+
+    if (newMode === "season") {
+      loadSeasonTrends();
+    } else {
+      loadMatchAnalysis(selectedMatchId);
+    }
+  }
+
+  function handleMatchChange(e) {
+    const matchId = e.target.value;
+    setSelectedMatchId(matchId);
+
+    if (mode === "match") {
+      loadMatchAnalysis(matchId);
+    }
+  }
+
+  return (
+    <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">Players</h1>
+        <p className="text-gray-500 mt-1">
+          Analyze players across the full season or inside one selected match.
+        </p>
+      </div>
+
+      <div className="flex flex-col md:flex-row gap-3 md:items-center">
+        <div className="flex gap-2">
+          <button
+            onClick={() => handleModeChange("season")}
+            className={`px-4 py-2 rounded-xl font-semibold ${
+              mode === "season"
+                ? "bg-blue-600 text-white"
+                : "bg-white text-gray-700 border"
+            }`}
+          >
+            All matches
+          </button>
+
+          <button
+            onClick={() => handleModeChange("match")}
+            className={`px-4 py-2 rounded-xl font-semibold ${
+              mode === "match"
+                ? "bg-blue-600 text-white"
+                : "bg-white text-gray-700 border"
+            }`}
+          >
+            One match
+          </button>
         </div>
+
+        <select
+          value={selectedMatchId}
+          onChange={handleMatchChange}
+          disabled={mode !== "match"}
+          className="bg-white border border-gray-300 rounded-xl px-4 py-2 shadow-sm disabled:opacity-50"
+        >
+          {matches.map((match) => (
+            <option key={match.match_id} value={match.match_id}>
+              {match.file_name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {loading && <p className="text-gray-600">Loading players...</p>}
+
+      {error && (
+        <div className="bg-red-100 text-red-700 p-4 rounded-xl">{error}</div>
       )}
 
-      {/* ROSTER GRID */}
       {!loading && !error && (
         <>
-          <div className="flex bg-slate-100 p-1 rounded-xl w-fit border border-slate-200">
-            {positions.map(pos => (
-              <button
-                key={pos}
-                onClick={() => setActiveTab(pos)}
-                className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${
-                  activeTab === pos ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                {pos}s
-              </button>
-            ))}
-          </div>
+          <p className="text-sm text-gray-500">
+            Showing {players.length} players.
+          </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredSquad.map((player) => (
-              <div 
-                key={player.playerId} 
-                onClick={() => navigate(`/player/${player.playerId}`)}
-                className="cursor-pointer transform transition hover:-translate-y-1 active:scale-95"
-              >
-                <PlayerCard 
-                  name={player.displayName}
-                  position={player.position}
-                  number={viewMode === 'history' ? 'SEASON' : `${player.total?.minutesOnField || 0}m`}              
-                  keyStat={player.bestStat}
-                  injuryRisk={player.total?.accelerations > 4 ? "High" : "Low"}
-                />
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            {players.map((player) => (
+              <PlayerCard
+                key={`${player.playerId}-${player.matchId || "season"}`}
+                player={player}
+                mode={mode}
+              />
             ))}
           </div>
         </>
       )}
     </div>
   );
-}   
+}

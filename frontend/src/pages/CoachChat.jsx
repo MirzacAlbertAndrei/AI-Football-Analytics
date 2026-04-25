@@ -1,59 +1,107 @@
-// src/pages/CoachChat.jsx
+import React, { useState } from "react";
+import { apiPost } from "../api";
+
 export default function CoachChat() {
+  const [question, setQuestion] = useState("");
+  const [messages, setMessages] = useState([
+    {
+      role: "assistant",
+      text: "Ask me something about U Cluj tactical risk, player trends, buildup problems, or attacking impact.",
+    },
+  ]);
+  const [loading, setLoading] = useState(false);
+
+  async function handleSend(e) {
+    e.preventDefault();
+
+    if (!question.trim()) return;
+
+    const userQuestion = question.trim();
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "user",
+        text: userQuestion,
+      },
+    ]);
+
+    setQuestion("");
+    setLoading(true);
+
+    try {
+      const data = await apiPost("/coach/chat", {
+        question: userQuestion,
+      });
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          text: data.answer || "No answer received from coach.",
+        },
+      ]);
+    } catch (err) {
+      console.error(err);
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          text: "Could not contact the AI coach endpoint.",
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <div className="max-w-4xl mx-auto h-[calc(100vh-6rem)] flex flex-col bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-      
-      {/* Header */}
-      <div className="bg-slate-900 p-4 border-b border-slate-800 flex items-center gap-3">
-        <div className="h-10 w-10 bg-emerald-500 rounded-full flex items-center justify-center text-xl">🤖</div>
-        <div>
-          <h2 className="text-white font-bold">Gaffer AI Assistant</h2>
-          <p className="text-slate-400 text-xs font-medium">Powered by Match Data</p>
-        </div>
+    <div className="p-6 bg-gray-50 min-h-screen flex flex-col">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-gray-900">AI Coach Chat</h1>
+        <p className="text-gray-500 mt-1">
+          Ask tactical questions based on the backend analysis.
+        </p>
       </div>
 
-      {/* Chat Area */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50">
-        
-        {/* User Message */}
-        <div className="flex justify-end">
-          <div className="bg-emerald-500 text-white p-4 rounded-2xl rounded-tr-sm max-w-[80%] shadow-sm">
-            <p className="text-sm">Why did our expected goals (xG) drop so drastically in the final 20 minutes?</p>
+      <div className="bg-white rounded-2xl shadow border border-gray-100 flex-1 p-5 space-y-4 overflow-y-auto">
+        {messages.map((message, index) => (
+          <div
+            key={index}
+            className={`max-w-3xl p-4 rounded-2xl ${
+              message.role === "user"
+                ? "ml-auto bg-blue-600 text-white"
+                : "mr-auto bg-gray-100 text-gray-800"
+            }`}
+          >
+            <p className="whitespace-pre-wrap">{message.text}</p>
           </div>
-        </div>
+        ))}
 
-        {/* AI Response */}
-        <div className="flex justify-start">
-          <div className="bg-white border border-slate-200 text-slate-800 p-4 rounded-2xl rounded-tl-sm max-w-[80%] shadow-sm">
-            <p className="text-sm leading-relaxed mb-3">
-              Based on the StatsBomb tracking data, there are two main reasons for the xG drop:
-            </p>
-            <ul className="text-sm space-y-2 list-disc list-inside text-slate-600 mb-3">
-              <li><strong className="text-slate-800">Fatigue in midfield:</strong> Bruno Fernandes's high-intensity runs decreased by 40%.</li>
-              <li><strong className="text-slate-800">Tactical shift:</strong> The opponent switched to a low-block (5-4-1), reducing space in Zone 14.</li>
-            </ul>
-            <p className="text-sm text-slate-600">
-              Would you like to see the player heatmaps for the final 20 minutes?
-            </p>
+        {loading && (
+          <div className="mr-auto bg-gray-100 text-gray-600 p-4 rounded-2xl">
+            Thinking...
           </div>
-        </div>
-
+        )}
       </div>
 
-      {/* Input Area */}
-      <div className="p-4 bg-white border-t border-slate-200">
-        <div className="flex items-center gap-2">
-          <input 
-            type="text" 
-            placeholder="Ask about player stats, tactics, or match events..." 
-            className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
-          />
-          <button className="bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-lg font-medium transition-colors">
-            Send
-          </button>
-        </div>
-      </div>
+      <form onSubmit={handleSend} className="mt-4 flex gap-3">
+        <input
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+          placeholder="Example: Who should avoid buildup under pressure?"
+          className="flex-1 bg-white border border-gray-300 rounded-xl px-4 py-3 shadow-sm"
+        />
 
+        <button
+          type="submit"
+          disabled={loading}
+          className="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold disabled:opacity-50"
+        >
+          Send
+        </button>
+      </form>
     </div>
   );
 }
