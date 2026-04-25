@@ -67,7 +67,8 @@ Final Match Plan
 Give a clear tactical plan for the next match.
 
 Keep it clear, direct, and useful for a coach.
-Answer only in English.
+Answer only in English. 
+Do not include special characters or formatting, just plain language.
 """
 
     response = client.models.generate_content(
@@ -107,6 +108,7 @@ Coach question:
 Answer clearly and tactically.
 Do not include special symbols or formatting, just plain language.
 Answer in English and in maximum 2-3 paragraphs.
+Do not include special characters or formatting, just plain language.
 """
 
     response = client.models.generate_content(
