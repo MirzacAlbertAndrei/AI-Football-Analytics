@@ -1,20 +1,32 @@
 import React, { useEffect, useState } from "react";
 import { apiGet } from "../api";
 
-function StatCard({ title, value, subtitle }) {
+// Helper to clean up match filenames for the dropdown
+function formatMatchName(rawName) {
+  if (!rawName) return "Unknown Match";
+  let cleanName = rawName.replace("_players_stats.json", "");
+  cleanName = cleanName.replace(/,\s*(\d+-\d+)/, " ($1)");
+  return cleanName;
+}
+
+function StatCard({ title, value, subtitle, status }) {
+  // status: 'positive', 'developing', 'neutral'
+  const accentClass = status === 'positive' ? 'bg-emerald-500' : status === 'developing' ? 'bg-amber-400' : 'bg-black';
+  
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 relative overflow-hidden group hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-default">
-      {/* Red accent line on top */}
-      <div className="absolute top-0 left-0 w-full h-1 bg-black group-hover:bg-red-600 transition-colors duration-300"></div>
+    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 relative overflow-hidden group hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-default">
+      <div className={`absolute top-0 left-0 w-full h-1 ${accentClass} group-hover:h-1.5 transition-all`}></div>
+      
       <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider">{title}</p>
-      <h2 className="text-4xl font-black text-black mt-2 tracking-tight group-hover:scale-[1.02] origin-left transition-transform duration-300">{value}</h2>
-      {subtitle && <p className="text-sm font-medium text-red-600 mt-1">{subtitle}</p>}
+      <h2 className="text-4xl font-black mt-2 tracking-tight text-black">
+        {value}
+      </h2>
+      {subtitle && <p className="text-sm font-medium mt-1 text-gray-400 uppercase text-[10px] tracking-widest">{subtitle}</p>}
     </div>
   );
 }
 
 function PlayerList({ title, players, type }) {
-  // Determine accent color based on list type
   const accentColor = type === "risk" ? "bg-red-600" : type === "attack" ? "bg-black" : "bg-gray-400";
 
   return (
@@ -36,36 +48,22 @@ function PlayerList({ title, players, type }) {
               <div className="flex justify-between items-start gap-3">
                 <div>
                   <div className="flex items-center gap-2">
-                    <p className="font-bold text-black text-lg">
-                      Player #{player.playerId}
-                    </p>
-                    {/* Animated hover icon */}
-                    <svg 
-                      className="w-4 h-4 text-gray-300 group-hover:text-red-600 group-hover:translate-x-1 transition-all duration-300" 
-                      fill="none" 
-                      strokeWidth="3" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
+                    <p className="font-bold text-black text-lg">Player #{player.playerId}</p>
+                    <svg className="w-4 h-4 text-gray-300 group-hover:text-red-600 group-hover:translate-x-1 transition-all duration-300" fill="none" strokeWidth="3" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                     </svg>
                   </div>
-                  <p className="text-xs font-bold text-red-600 uppercase tracking-wide">
-                    {player.position || "Unknown position"}
-                  </p>
+                  <p className="text-xs font-bold text-red-600 uppercase tracking-wide">{player.position || "Unknown position"}</p>
                 </div>
               </div>
-
               {player.trend_label && (
-                <p className="text-[11px] font-bold text-gray-800 mt-3 bg-white border border-gray-200 inline-block px-2 py-1 rounded shadow-sm group-hover:border-gray-300 transition-colors uppercase tracking-wider">
+                <p className="text-[11px] font-bold text-gray-800 mt-3 bg-white border border-gray-200 inline-block px-2 py-1 rounded shadow-sm uppercase tracking-wider">
                   {player.trend_label}
                 </p>
               )}
-
               {player.recommendation && (
-                <p className="text-sm text-gray-600 mt-2 leading-relaxed border-t border-gray-200/50 pt-2 group-hover:border-gray-200 transition-colors">
-                  <span className="font-semibold text-black">Action: </span>
-                  {player.recommendation}
+                <p className="text-sm text-gray-600 mt-2 leading-relaxed border-t border-gray-200/50 pt-2">
+                  <span className="font-semibold text-black">Focus: </span>{player.recommendation}
                 </p>
               )}
             </div>
@@ -81,23 +79,15 @@ export default function Overview() {
   const [matches, setMatches] = useState([]);
   const [selectedMatchId, setSelectedMatchId] = useState("all");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
   async function loadOverview(matchId = "all") {
     try {
       setLoading(true);
-      setError("");
-
-      const path =
-        matchId === "all"
-          ? "/dashboard/overview"
-          : `/dashboard/overview?match_id=${matchId}`;
-
+      const path = matchId === "all" ? "/dashboard/overview" : `/dashboard/overview?match_id=${matchId}`;
       const data = await apiGet(path);
       setOverview(data);
     } catch (err) {
-      console.error(err);
-      setError("Could not load overview from backend.");
+      console.error("Error loading overview", err);
     } finally {
       setLoading(false);
     }
@@ -109,12 +99,10 @@ export default function Overview() {
         const matchesData = await apiGet("/players/matches");
         setMatches(matchesData.matches || []);
       } catch (err) {
-        console.error("Could not load matches", err);
+        console.error("Error loading matches", err);
       }
-
       await loadOverview("all");
     }
-
     loadInitialData();
   }, []);
 
@@ -129,17 +117,7 @@ export default function Overview() {
       <div className="flex items-center justify-center min-h-screen bg-zinc-50">
         <div className="text-center space-y-3">
           <div className="w-10 h-10 border-4 border-gray-200 border-t-red-600 rounded-full animate-spin mx-auto"></div>
-          <p className="text-gray-600 font-medium tracking-wide uppercase text-sm">Loading tactical overview...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error && !overview) {
-    return (
-      <div className="p-8 bg-zinc-50 min-h-screen">
-        <div className="bg-red-50 border-l-4 border-red-600 text-red-800 p-5 rounded-r-xl shadow-sm font-medium">
-          {error}
+          <p className="text-gray-600 font-medium tracking-wide uppercase text-sm">Synchronizing Intelligence...</p>
         </div>
       </div>
     );
@@ -147,17 +125,42 @@ export default function Overview() {
 
   if (!overview) return null;
 
+  // --- POSITIVE ANALYTICS ---
+  const performanceIndex = overview.players_analyzed 
+    ? Math.round(((overview.stable_players?.length || 0) / overview.players_analyzed) * 100) 
+    : 0;
+
+  const totalThreat = parseFloat(overview.top_attackers?.reduce((sum, p) => 
+    sum + (p.raw_stats?.xg || p.totals?.xg || 0), 0).toFixed(2)) || 0;
+
+  // High-performance mapping
+  const getPerformanceBranding = () => {
+    if (performanceIndex >= 75) return { label: 'Peak Performance', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+    if (performanceIndex >= 50) return { label: 'Strong Foundation', color: 'bg-blue-50 text-blue-700 border-blue-200' };
+    return { label: 'Developing Synergy', color: 'bg-amber-50 text-amber-700 border-amber-200' };
+  };
+
+  const branding = getPerformanceBranding();
+  console.log("Current Overview Data:", overview);
   return (
-    <div className="p-6 md:p-8 space-y-8 bg-zinc-50 min-h-screen font-sans">
-      {/* Header Section */}
+    <div className="p-6 md:p-8 space-y-8 bg-zinc-50 min-h-screen font-sans text-black">
+      
+      {/* HEADER AREA */}
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 border-b border-gray-200 pb-6">
-        <div>
-          <h1 className="text-4xl md:text-5xl font-black text-black tracking-tight uppercase">
-            Tactical <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-800">Overview</span>
+        <div className="space-y-2">
+          <h1 className="text-4xl md:text-5xl font-black tracking-tight uppercase">
+            Tactical <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-800">Intelligence</span>
           </h1>
-          <p className="text-gray-500 font-medium mt-2 tracking-wide text-sm uppercase">
-            AI ANALYSIS INTERFACE • U CLUJ MATCH DATA
-          </p>
+          <div className="flex items-center gap-3">
+             <p className="text-gray-500 font-medium tracking-wide text-xs uppercase">U CLUJ ANALYTICS • DATA-DRIVEN INSIGHTS</p>
+             <div className={`px-2 py-0.5 rounded border text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 ${branding.color}`}>
+               <span className="relative flex h-2 w-2">
+                  <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${branding.color.split(' ')[1].replace('text', 'bg')}`}></span>
+                  <span className={`relative inline-flex rounded-full h-2 w-2 ${branding.color.split(' ')[1].replace('text', 'bg')}`}></span>
+               </span>
+               {branding.label}
+             </div>
+          </div>
         </div>
 
         <select
@@ -165,91 +168,52 @@ export default function Overview() {
           onChange={handleMatchChange}
           className="bg-white border-2 border-gray-200 rounded-lg px-4 py-3 shadow-sm font-semibold text-black focus:outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600 transition-colors appearance-none min-w-[220px] cursor-pointer"
         >
-          <option value="all">All Matches Overview</option>
+          <option value="all">Season Performance View</option>
           {matches.map((match) => (
             <option key={match.match_id} value={match.match_id}>
-              {match.file_name}
+              {formatMatchName(match.file_name)}
             </option>
           ))}
         </select>
       </div>
 
-      {error && (
-        <div className="bg-red-50 border-l-4 border-red-600 text-red-800 p-4 rounded-r-xl font-medium shadow-sm">
-          {error}
-        </div>
-      )}
-
-      {/* Stats Grid */}
+      {/* STATS GRID */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          title="Analysis Mode"
-          value={overview.mode === "single_match" ? "Match" : "Season"}
-          subtitle="Current scope"
+        <StatCard title="Current Scope" value={overview.mode === "single_match" ? "Match" : "Season"} subtitle="Analysis Range" />
+        <StatCard title="Active Profiles" value={overview.players_analyzed || 0} subtitle="Data points" />
+        <StatCard 
+          title="Performance Index" 
+          value={`${performanceIndex}%`} 
+          subtitle="Squad execution rate" 
+          status={performanceIndex >= 50 ? 'positive' : 'developing'}
         />
-        <StatCard
-          title="Players Analyzed"
-          value={overview.players_analyzed || 0}
-          subtitle="Available profiles"
-        />
-        <StatCard
-          title="Risky Players"
-          value={overview.top_risky_players?.length || 0}
-          subtitle="Possession risk"
-        />
-        <StatCard
-          title="Top Attackers"
-          value={overview.top_attackers?.length || 0}
-          subtitle="Offensive impact"
+        <StatCard 
+          title="Attacking Impact" 
+          value={totalThreat.toFixed(2)} 
+          subtitle="Cumulative xG" 
+          status={totalThreat > 1.5 ? 'positive' : 'neutral'}
         />
       </div>
 
-      {/* Tactical Problems Section */}
-      {overview.mode === "all_matches" && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 relative overflow-hidden group hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-            {/* Animated side accent line */}
-            <div className="absolute top-0 left-0 w-1.5 group-hover:w-2.5 h-full bg-red-600 transition-all duration-300"></div>
-            <h3 className="text-lg font-bold text-black uppercase tracking-wider mb-3 pl-2 group-hover:translate-x-1 transition-transform duration-300">
-              Main Tactical Problem
-            </h3>
-            <p className="text-gray-700 leading-relaxed pl-2 text-lg">
-              {overview.main_problem || "No main problem available."}
-            </p>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 relative overflow-hidden group hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-            {/* Animated side accent line */}
-            <div className="absolute top-0 left-0 w-1.5 group-hover:w-2.5 h-full bg-black transition-all duration-300"></div>
-            <h3 className="text-lg font-bold text-black uppercase tracking-wider mb-3 pl-2 group-hover:translate-x-1 transition-transform duration-300">
-              Coach Recommendation
-            </h3>
-            <p className="text-gray-700 leading-relaxed pl-2 text-lg">
-              {overview.main_recommendation || "No recommendation available."}
-            </p>
-          </div>
+      {/* AI TACTICAL SUMMARY */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 relative overflow-hidden group hover:shadow-md transition-all duration-300">
+          <div className="absolute top-0 left-0 w-1.5 h-full bg-red-600"></div>
+          <h3 className="text-lg font-bold text-black uppercase tracking-wider mb-3 pl-2">Primary Tactical Focus</h3>
+          <p className="text-gray-700 leading-relaxed pl-2 text-lg font-medium">{overview.main_problem || "Analysis pending..."}</p>
         </div>
-      )}
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 relative overflow-hidden group hover:shadow-md transition-all duration-300">
+          <div className="absolute top-0 left-0 w-1.5 h-full bg-black"></div>
+          <h3 className="text-lg font-bold text-black uppercase tracking-wider mb-3 pl-2">Optimization Strategy</h3>
+          <p className="text-gray-700 leading-relaxed pl-2 text-lg font-medium">{overview.main_recommendation || "Strategy generating..."}</p>
+        </div>
+      </div>
 
-      {/* Player Lists Grid */}
+      {/* DRILL-DOWN LISTS */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4 items-stretch">
-        <PlayerList
-          title="Top Risky Players"
-          players={overview.top_risky_players || []}
-          type="risk"
-        />
-
-        <PlayerList
-          title="Top Attackers"
-          players={overview.top_attackers || []}
-          type="attack"
-        />
-
-        <PlayerList
-          title="Stable Players"
-          players={overview.stable_players || []}
-          type="stable"
-        />
+        <PlayerList title="High Attention Profiles" players={overview.top_risky_players || []} type="risk" />
+        <PlayerList title="Key Offensive Drivers" players={overview.top_attackers || []} type="attack" />
+        <PlayerList title="Performance Anchors" players={overview.stable_players || []} type="stable" />
       </div>
     </div>
   );

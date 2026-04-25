@@ -2,6 +2,16 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiGet } from "../api";
 
+// Helper to clean up match filenames for the dropdown
+function formatMatchName(rawName) {
+  if (!rawName) return "Unknown Match";
+  // Remove the suffix
+  let cleanName = rawName.replace("_players_stats.json", "");
+  // Format the score: turns "Team A - Team B, 1-0" into "Team A - Team B (1-0)"
+  cleanName = cleanName.replace(/,\s*(\d+-\d+)/, " ($1)");
+  return cleanName;
+}
+
 function getRiskClass(risk) {
   if (risk === "High") return "bg-red-600 text-white";
   if (risk === "Medium") return "bg-black text-white";
@@ -16,6 +26,7 @@ function PlayerCard({ player, mode, onClick }) {
       onClick={onClick}
       className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 relative overflow-hidden group hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col h-full cursor-pointer"
     >
+      {/* Red accent line on top */}
       <div className="absolute top-0 left-0 w-full h-1 bg-black group-hover:bg-red-600 transition-colors duration-300"></div>
       
       <div className="flex justify-between items-start gap-3 mb-5">
@@ -24,6 +35,7 @@ function PlayerCard({ player, mode, onClick }) {
             <h3 className="text-2xl font-black text-black tracking-tight uppercase">
               Player #{player.playerId}
             </h3>
+            {/* Animated Hover Icon */}
             <svg 
               className="w-5 h-5 text-gray-300 group-hover:text-red-600 group-hover:translate-x-1.5 transition-all duration-300" 
               fill="none" 
@@ -76,6 +88,7 @@ function PlayerCard({ player, mode, onClick }) {
         )}
       </div>
 
+      {/* Bottom recommendation section */}
       <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 mt-auto group-hover:bg-red-50 group-hover:border-red-100 transition-colors duration-300">
         <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1 group-hover:text-red-400 transition-colors">
           {isMatchMode ? "Match Analysis" : "Season Trend"}
@@ -183,6 +196,7 @@ export default function Players() {
 
   return (
     <div className="p-6 md:p-8 space-y-8 bg-zinc-50 min-h-screen font-sans">
+      {/* Header Section */}
       <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 border-b border-gray-200 pb-6">
         <div>
           <h1 className="text-4xl md:text-5xl font-black text-black tracking-tight uppercase">
@@ -193,6 +207,7 @@ export default function Players() {
           </p>
         </div>
 
+        {/* Controls */}
         <div className="flex flex-col sm:flex-row gap-4 sm:items-center">
           <div className="flex bg-gray-200 p-1 rounded-lg shadow-inner">
             <button
@@ -217,6 +232,7 @@ export default function Players() {
             </button>
           </div>
 
+          {/* Conditional Dropdown with formatted names */}
           {mode === "match" && (
             <select
               value={selectedMatchId}
@@ -225,7 +241,7 @@ export default function Players() {
             >
               {matches.map((match) => (
                 <option key={match.match_id} value={match.match_id}>
-                  {match.file_name}
+                  {formatMatchName(match.file_name)}
                 </option>
               ))}
             </select>
@@ -233,6 +249,7 @@ export default function Players() {
         </div>
       </div>
 
+      {/* Loading State */}
       {loading && (
         <div className="flex flex-col items-center justify-center py-20 space-y-4">
           <div className="w-10 h-10 border-4 border-gray-200 border-t-red-600 rounded-full animate-spin mx-auto"></div>
@@ -242,12 +259,14 @@ export default function Players() {
         </div>
       )}
 
+      {/* Error State */}
       {error && !loading && (
         <div className="bg-red-50 border-l-4 border-red-600 text-red-800 p-5 rounded-r-xl shadow-sm font-medium">
           {error}
         </div>
       )}
 
+      {/* Content Grid */}
       {!loading && !error && (
         <div className="space-y-4">
           <div className="flex items-center gap-3">
