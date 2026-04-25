@@ -1,4 +1,3 @@
-// src/components/RiskBadge.jsx
 export default function RiskBadge({ level }) {
   // Define colors based on the risk level
   const colors = {
@@ -7,7 +6,6 @@ export default function RiskBadge({ level }) {
     Low: 'bg-emerald-100 text-emerald-800 border-emerald-200'
   };
 
-  // Fallback to gray if the level is missing or undefined
   const colorClass = colors[level] || 'bg-slate-100 text-slate-800 border-slate-200';
 
   return (

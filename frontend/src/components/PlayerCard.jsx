@@ -1,4 +1,3 @@
-// src/components/PlayerCard.jsx
 import RiskBadge from './RiskBadge';
 
 export default function PlayerCard({ name, position, number, injuryRisk, keyStat }) {
@@ -7,7 +6,6 @@ export default function PlayerCard({ name, position, number, injuryRisk, keyStat
       
       {/* Left side: Player Info */}
       <div className="flex items-center space-x-4">
-        {/* Mock Jersey Number Avatar */}
         <div className="h-12 w-12 rounded-full bg-slate-50 border-2 border-slate-200 flex items-center justify-center text-lg font-bold text-slate-700">
           {number}
         </div>

@@ -12,7 +12,6 @@ export default function Sidebar() {
     <div className="w-64 bg-black h-screen text-white flex flex-col border-r border-gray-900 shrink-0 font-sans shadow-2xl">
       {/* Header / Brand Area */}
       <div className="h-24 flex items-center px-8 border-b border-gray-900 relative overflow-hidden">
-        {/* Signature Red Accent */}
         <div className="absolute left-0 top-0 w-1.5 h-full bg-red-600"></div>
         <h1 className="text-3xl font-black text-white tracking-widest uppercase">
           AI <span className="text-red-600">Coach Assist</span>
@@ -66,9 +65,7 @@ export default function Sidebar() {
       {/* Footer / User Profile */}
       <div className="p-6 border-t border-gray-900 bg-black">
         <div className="flex items-center gap-4 group cursor-pointer p-2 rounded-xl hover:bg-gray-900 transition-colors duration-300">
-          {/* Avatar Block */}
           <div className="h-12 w-12 rounded-lg bg-gray-900 border border-gray-800 flex items-center justify-center text-red-600 font-black group-hover:border-red-600 transition-colors duration-300 relative overflow-hidden">
-            {/* Fill animation on hover */}
             <div className="absolute bottom-0 left-0 w-full h-0 bg-red-600 group-hover:h-full transition-all duration-300 z-0"></div>
             <span className="relative z-10 group-hover:text-white transition-colors duration-300">HC</span>
           </div>

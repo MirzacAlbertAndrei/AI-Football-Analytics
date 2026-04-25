@@ -1,8 +1,6 @@
-// src/components/CoachRecommendation.jsx
 export default function CoachRecommendation({ title, insight, action }) {
   return (
     <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-6 relative overflow-hidden">
-      {/* Decorative background accent */}
       <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-indigo-200 rounded-full opacity-50 blur-xl"></div>
       
       <div className="relative z-10">

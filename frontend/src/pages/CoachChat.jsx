@@ -72,7 +72,6 @@ export default function CoachChat() {
 
       {/* Chat Container */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col flex-1 relative overflow-hidden">
-        {/* Accent line on top */}
         <div className="absolute top-0 left-0 w-full h-1 bg-black"></div>
 
         {/* Messages Area */}

@@ -1,10 +1,6 @@
-// src/components/MetricCard.jsx
-
 export default function MetricCard({ title, value, trend, trendLabel }) {
-  // Determine if the trend is positive or negative for styling
   const isPositive = trend === 'up';
   
-  // Choose colors based on the trend
   const trendColor = isPositive ? 'text-emerald-500' : 'text-rose-500';
   const TrendIcon = isPositive ? '↑' : '↓';
 

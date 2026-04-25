@@ -9,14 +9,17 @@ function formatMatchName(rawName) {
   return cleanName;
 }
 
-function StatCard({ title, value, subtitle, status }) {
-  const accentClass = status === 'positive' ? 'bg-emerald-500' : status === 'developing' ? 'bg-amber-400' : 'bg-black';
-  
+// Simplified StatCard with consistent black branding
+function StatCard({ title, value, subtitle }) {
   return (
     <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 relative overflow-hidden group hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-default">
-      <div className={`absolute top-0 left-0 w-full h-1 ${accentClass} group-hover:h-1.5 transition-all`}></div>
+      {/* Top accent line is now consistently black to match the other tabs */}
+      <div className="absolute top-0 left-0 w-full h-1 bg-black group-hover:h-1.5 transition-all"></div>
+      
       <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider">{title}</p>
-      <h2 className="text-4xl font-black mt-2 tracking-tight text-black">{value}</h2>
+      <h2 className="text-4xl font-black mt-2 tracking-tight text-black">
+        {value}
+      </h2>
       {subtitle && <p className="text-sm font-medium mt-1 text-gray-400 uppercase text-[10px] tracking-widest">{subtitle}</p>}
     </div>
   );
@@ -136,10 +139,10 @@ export default function Overview() {
   const totalThreat = parseFloat(overview.top_attackers?.reduce((sum, p) => 
     sum + (p.raw_stats?.xg || p.totals?.xg || 0), 0).toFixed(2)) || 0;
 
+  // Simplified branding logic: Removed Developing tier
   const getPerformanceBranding = () => {
     if (performanceIndex >= 75) return { label: 'Peak Performance', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
-    if (performanceIndex >= 50) return { label: 'Strong Foundation', color: 'bg-blue-50 text-blue-700 border-blue-200' };
-    return { label: 'Developing Synergy', color: 'bg-amber-50 text-amber-700 border-amber-200' };
+    return { label: 'Standard Analysis', color: 'bg-zinc-50 text-zinc-700 border-zinc-200' };
   };
 
   const branding = getPerformanceBranding();
@@ -179,7 +182,7 @@ export default function Overview() {
         </select>
       </div>
 
-      {/* STATS GRID */}
+      {/* STATS GRID - Now visually unified in black */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard title="Current Scope" value={overview.mode === "single_match" ? "Match" : "Season"} subtitle="Analysis Range" />
         <StatCard title="Active Profiles" value={overview.players_analyzed || 0} subtitle="Data points" />
@@ -187,13 +190,11 @@ export default function Overview() {
           title="Performance Index" 
           value={`${performanceIndex}%`} 
           subtitle="Squad execution rate" 
-          status={performanceIndex >= 50 ? 'positive' : 'developing'}
         />
         <StatCard 
           title="Attacking Impact" 
           value={totalThreat.toFixed(2)} 
           subtitle="Cumulative xG" 
-          status={totalThreat > 1.5 ? 'positive' : 'neutral'}
         />
       </div>
 

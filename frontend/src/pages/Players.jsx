@@ -2,12 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiGet } from "../api";
 
-// Helper to clean up match filenames for the dropdown
 function formatMatchName(rawName) {
   if (!rawName) return "Unknown Match";
-  // Remove the suffix
   let cleanName = rawName.replace("_players_stats.json", "");
-  // Format the score: turns "Team A - Team B, 1-0" into "Team A - Team B (1-0)"
   cleanName = cleanName.replace(/,\s*(\d+-\d+)/, " ($1)");
   return cleanName;
 }

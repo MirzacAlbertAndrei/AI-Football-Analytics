@@ -1,7 +1,6 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-// Ensure this path matches where you saved the Sidebar component
 import Sidebar from "./components/Sidebar"; 
 
 import Overview from "./pages/Overview";
