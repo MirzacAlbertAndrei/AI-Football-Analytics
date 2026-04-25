@@ -33,7 +33,7 @@ function PlayerCard({ player, mode, onClick }) {
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-2xl font-black text-black tracking-tight uppercase">
-              Player #{player.playerId}
+              {player.playerName || `Player #${player.playerId}`}
             </h3>
             {/* Animated Hover Icon */}
             <svg 

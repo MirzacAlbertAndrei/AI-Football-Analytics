@@ -1,6 +1,7 @@
 from collections import defaultdict, Counter
 from services.stats_parser import get_all_players
 from services.player_analyzer import analyze_player
+from data.player_map import PLAYER_MAP
 
 
 def analyze_player_trends(min_matches=2):
@@ -48,6 +49,7 @@ def analyze_player_trends(min_matches=2):
 
         trends.append({
             "playerId": player_id,
+            "playerName": PLAYER_MAP.get(player_id, f"Player #{player_id}"),
             "position": get_best_position(analyzed_entries),
             "matches_played": matches_played,
             "averages": {

@@ -10,17 +10,13 @@ function formatMatchName(rawName) {
 }
 
 function StatCard({ title, value, subtitle, status }) {
-  // status: 'positive', 'developing', 'neutral'
   const accentClass = status === 'positive' ? 'bg-emerald-500' : status === 'developing' ? 'bg-amber-400' : 'bg-black';
   
   return (
     <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 relative overflow-hidden group hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-default">
       <div className={`absolute top-0 left-0 w-full h-1 ${accentClass} group-hover:h-1.5 transition-all`}></div>
-      
       <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider">{title}</p>
-      <h2 className="text-4xl font-black mt-2 tracking-tight text-black">
-        {value}
-      </h2>
+      <h2 className="text-4xl font-black mt-2 tracking-tight text-black">{value}</h2>
       {subtitle && <p className="text-sm font-medium mt-1 text-gray-400 uppercase text-[10px] tracking-widest">{subtitle}</p>}
     </div>
   );
@@ -48,8 +44,16 @@ function PlayerList({ title, players, type }) {
               <div className="flex justify-between items-start gap-3">
                 <div>
                   <div className="flex items-center gap-2">
-                    <p className="font-bold text-black text-lg">Player #{player.playerId}</p>
-                    <svg className="w-4 h-4 text-gray-300 group-hover:text-red-600 group-hover:translate-x-1 transition-all duration-300" fill="none" strokeWidth="3" stroke="currentColor" viewBox="0 0 24 24">
+                    <p className="font-bold text-black text-lg">
+                      {player.playerName || `Player #${player.playerId}`}
+                    </p>
+                    <svg 
+                      className="w-4 h-4 text-gray-300 group-hover:text-red-600 group-hover:translate-x-1 transition-all duration-300" 
+                      fill="none" 
+                      strokeWidth="3" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
                       <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                     </svg>
                   </div>
@@ -125,7 +129,6 @@ export default function Overview() {
 
   if (!overview) return null;
 
-  // --- POSITIVE ANALYTICS ---
   const performanceIndex = overview.players_analyzed 
     ? Math.round(((overview.stable_players?.length || 0) / overview.players_analyzed) * 100) 
     : 0;
@@ -133,7 +136,6 @@ export default function Overview() {
   const totalThreat = parseFloat(overview.top_attackers?.reduce((sum, p) => 
     sum + (p.raw_stats?.xg || p.totals?.xg || 0), 0).toFixed(2)) || 0;
 
-  // High-performance mapping
   const getPerformanceBranding = () => {
     if (performanceIndex >= 75) return { label: 'Peak Performance', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
     if (performanceIndex >= 50) return { label: 'Strong Foundation', color: 'bg-blue-50 text-blue-700 border-blue-200' };
@@ -141,7 +143,7 @@ export default function Overview() {
   };
 
   const branding = getPerformanceBranding();
-  console.log("Current Overview Data:", overview);
+
   return (
     <div className="p-6 md:p-8 space-y-8 bg-zinc-50 min-h-screen font-sans text-black">
       
@@ -195,19 +197,25 @@ export default function Overview() {
         />
       </div>
 
-      {/* AI TACTICAL SUMMARY */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 relative overflow-hidden group hover:shadow-md transition-all duration-300">
-          <div className="absolute top-0 left-0 w-1.5 h-full bg-red-600"></div>
-          <h3 className="text-lg font-bold text-black uppercase tracking-wider mb-3 pl-2">Primary Tactical Focus</h3>
-          <p className="text-gray-700 leading-relaxed pl-2 text-lg font-medium">{overview.main_problem || "Analysis pending..."}</p>
+      {/* AI TACTICAL SUMMARY - Only shows if data exists */}
+      {(overview.main_problem || overview.main_recommendation) && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {overview.main_problem && (
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 relative overflow-hidden group hover:shadow-md transition-all duration-300">
+              <div className="absolute top-0 left-0 w-1.5 h-full bg-red-600"></div>
+              <h3 className="text-lg font-bold text-black uppercase tracking-wider mb-3 pl-2">Primary Tactical Focus</h3>
+              <p className="text-gray-700 leading-relaxed pl-2 text-lg font-medium">{overview.main_problem}</p>
+            </div>
+          )}
+          {overview.main_recommendation && (
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 relative overflow-hidden group hover:shadow-md transition-all duration-300">
+              <div className="absolute top-0 left-0 w-1.5 h-full bg-black"></div>
+              <h3 className="text-lg font-bold text-black uppercase tracking-wider mb-3 pl-2">Optimization Strategy</h3>
+              <p className="text-gray-700 leading-relaxed pl-2 text-lg font-medium">{overview.main_recommendation}</p>
+            </div>
+          )}
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 relative overflow-hidden group hover:shadow-md transition-all duration-300">
-          <div className="absolute top-0 left-0 w-1.5 h-full bg-black"></div>
-          <h3 className="text-lg font-bold text-black uppercase tracking-wider mb-3 pl-2">Optimization Strategy</h3>
-          <p className="text-gray-700 leading-relaxed pl-2 text-lg font-medium">{overview.main_recommendation || "Strategy generating..."}</p>
-        </div>
-      </div>
+      )}
 
       {/* DRILL-DOWN LISTS */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4 items-stretch">
