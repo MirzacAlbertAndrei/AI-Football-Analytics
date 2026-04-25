@@ -200,7 +200,7 @@ export default function Players() {
       <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 border-b border-gray-200 pb-6">
         <div>
           <h1 className="text-4xl md:text-5xl font-black text-black tracking-tight uppercase">
-            Player <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-800">Analysis</span>
+            Player <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-800 to-red-600">Analysis</span>
           </h1>
           <p className="text-gray-500 font-medium mt-2 tracking-wide uppercase text-sm">
             AI ANALYSIS INTERFACE • U CLUJ ROSTER DATA

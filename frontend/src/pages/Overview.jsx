@@ -149,7 +149,7 @@ export default function Overview() {
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 border-b border-gray-200 pb-6">
         <div className="space-y-2">
           <h1 className="text-4xl md:text-5xl font-black tracking-tight uppercase">
-            Tactical <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-800">Intelligence</span>
+            Tactical <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-800 to-red-600">Intelligence</span>
           </h1>
           <div className="flex items-center gap-3">
              <p className="text-gray-500 font-medium tracking-wide text-xs uppercase">U CLUJ ANALYTICS • DATA-DRIVEN INSIGHTS</p>

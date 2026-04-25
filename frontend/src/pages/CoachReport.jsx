@@ -31,7 +31,7 @@ export default function CoachReport() {
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 border-b border-gray-200 pb-6">
         <div>
           <h1 className="text-4xl md:text-5xl font-black text-black tracking-tight uppercase">
-            AI Coach <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-800">Report</span>
+            AI Coach <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-800 to-red-600">Report</span>
           </h1>
           <p className="text-gray-500 font-medium mt-2 tracking-wide uppercase text-sm">
             AI ANALYSIS INTERFACE • U CLUJ TACTICAL DOSSIER
