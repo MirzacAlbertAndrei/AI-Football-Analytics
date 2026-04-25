@@ -47,25 +47,25 @@ Data:
 
 Create a professional coach report with this exact structure:
 
-## Executive Summary
-Give 2-3 sentences about the team’s main tactical pattern.
+Executive Summary
+2–3 sentences on the team’s main tactical pattern.
 
-## Key Tactical Risks
-List the main risky players and explain WHY using their stats.
+Key Tactical Risks
+List risky players and explain why using their stats.
 
-## Attacking Assets
-List the best attacking players and explain how to use them.
+Attacking Assets
+Identify key attackers and how to use them.
 
-## Stable Profiles
-Mention players who can help stabilize possession.
+Stable Profiles
+Mention players who stabilize possession.
 
-## Training Priorities
-Give 3 concrete training focuses.
+Training Priorities
+List exactly 3 actionable focuses.
 
-## Final Match Plan
-Give a practical tactical plan for the next match.
+Final Match Plan
+Give a clear tactical plan for the next match.
 
-Keep it clear, direct, and useful for a coach.
+Keep it clear, direct, and useful for a coach. Keep it concise(maximum 1-2 sentences) and only in English.
 """
     
     
@@ -101,6 +101,7 @@ Coach question:
 
 Answer clearly and tactically.
 Use playerId if names are missing.
+Answer in English and in maximum 2-3 paragraphs made of 1-2(maximum 3) sentences each.
 """
 
     response = client.models.generate_content(
