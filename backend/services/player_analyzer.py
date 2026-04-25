@@ -123,3 +123,4 @@ def build_recommendation(risk, attacking_impact, creativity, defensive_stability
         return "Defensively reliable player. Useful for protecting structure and winning the ball back."
 
     return "Balanced profile. No major tactical warning detected."
+
