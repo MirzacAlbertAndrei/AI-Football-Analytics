@@ -69,6 +69,8 @@ Give a clear tactical plan for the next match.
 Keep it clear, direct, and useful for a coach.
 Answer only in English. 
 Do not include special characters or formatting, just plain language.
+Make everytghing concise and actionable.
+
 """
 
     response = client.models.generate_content(
