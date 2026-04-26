@@ -111,6 +111,7 @@ def build_main_problem(trends):
         if p["trend_label"] == "Stable profile"
     )
 
+
     problems = []
 
     if avg_danger >= 0.7:
