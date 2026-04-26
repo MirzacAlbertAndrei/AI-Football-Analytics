@@ -1,3 +1,4 @@
+import os
 import json
 from pathlib import Path
 
@@ -10,6 +11,27 @@ U_CLUJ_PLAYER_IDS = {
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data" / "matches"
+
+def get_all_matches():
+    matches = []
+
+    for file_name in os.listdir(DATA_DIR):
+        if not file_name.endswith(".json"):
+            continue
+
+        file_path = os.path.join(DATA_DIR, file_name)
+
+        with open(file_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+            matches.append({
+                "match_id": file_name,
+                "file_name": file_name,
+                "players": data.get("players", [])
+            })
+
+    return matches
+
 
 
 def normalize_player_id(player):

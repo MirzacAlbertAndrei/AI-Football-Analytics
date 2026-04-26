@@ -139,9 +139,7 @@ export default function Overview() {
 
   if (!overview) return null;
 
-  const performanceIndex = overview.players_analyzed 
-    ? Math.round(((overview.stable_players?.length || 0) / overview.players_analyzed) * 100) 
-    : 0;
+  const performanceIndex = overview.performance_index ?? 50;
 
   const totalThreat = parseFloat(overview.top_attackers?.reduce((sum, p) => 
     sum + (p.raw_stats?.xg || p.totals?.xg || 0), 0).toFixed(2)) || 0;

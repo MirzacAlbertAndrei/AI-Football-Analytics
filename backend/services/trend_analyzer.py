@@ -82,14 +82,36 @@ def analyze_player_trends(min_matches=2):
 
 
 def get_top_risky_players(limit=10):
-    return analyze_player_trends()[:limit]
+    trends = analyze_player_trends()
+
+    risky_players = [
+        p for p in trends
+        if p["trend_label"] in [
+            "Consistent high possession risk",
+            "Dangerous transition risk",
+            "Frequent ball losses"
+        ]
+    ]
+
+    return risky_players[:limit]
 
 
 def get_top_attacking_players(limit=10):
     trends = analyze_player_trends()
 
+    attacking_players = [
+        p for p in trends
+        if (
+            p["trend_label"] == "Consistent attacking impact"
+            or (
+                p["high_impact_matches"] >= 2
+                and p["totals"]["xg"] >= 0.8
+            )
+        )
+    ]
+
     return sorted(
-        trends,
+        attacking_players,
         key=lambda player: (
             player["totals"]["goals"],
             player["totals"]["xg"],

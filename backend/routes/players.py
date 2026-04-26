@@ -15,7 +15,7 @@ from services.trend_analyzer import (
 
 router = APIRouter(prefix="/players", tags=["Players"])
 
-
+    
 @router.get("/")
 def get_players():
     players = get_all_players()
