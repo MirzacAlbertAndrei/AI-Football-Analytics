@@ -1,12 +1,23 @@
+# Environment variables / secrets
+.env
+.env.*
+!.env.example
+
 # Python
 __pycache__/
-*.pyc
-
-# Virtual environment
+*.py[cod]
+*.pyo
 .venv/
+venv/
 
-# VS Code
+# Node / Vite
+node_modules/
+.vite/
+dist/
+
+# IDEs
 .vscode/
+.idea/
 
 # OS files
 .DS_Store
