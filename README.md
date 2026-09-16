@@ -69,39 +69,6 @@ GDG_HACKATHON/
     └── package.json
 ```
 
-## Running the Project
-
-### Backend
-
-```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-
-Create a `.env` file based on `backend/.env.example` and add your Gemini API key.
-
-Run the backend:
-
-```bash
-uvicorn main:app --reload
-```
-
-The API runs at:
-
-```text
-http://localhost:8000
-```
-
-### Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
 ## AI Coach
 
 The AI coaching component uses structured player analytics as context for Gemini.
